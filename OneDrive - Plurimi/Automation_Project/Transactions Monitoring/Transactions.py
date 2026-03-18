@@ -5,13 +5,18 @@ import os
 import urllib.parse
 from datetime import datetime
 
+st.set_page_config(layout="wide", page_title="AML Monaco Portal")
+
 # --- 1. CONFIGURATION ---
-BASE_DIR = r"C:\Users\Hugo Szym\OneDrive - Plurimi\Automation_Project\Transactions Monitoring"
+dev_mode = st.sidebar.toggle("🛠️ Dev Mode", value=False)
+BASE_DIR = (
+    r"C:\Users\Hugo Szym\OneDrive - Plurimi\Automation_Project\Transactions Monitoring"
+    if dev_mode else
+    r"C:\Users\ChiaraIncardona\OneDrive - Plurimi\Documents - Plurimi Wealth (Monaco) SAM\Compliance\PROCEDURES\MCO AML TR MONITORING\MONTHLY MONITORING\2026"
+)
 RM_EMAIL_FILE = os.path.join(BASE_DIR, "RM_Emails.xlsx")
 ETHR_FILE = os.path.join(BASE_DIR, "ETHR_List.xlsx")
 COMPLIANCE_PASSWORD = "Chiara"
-
-st.set_page_config(layout="wide", page_title="AML Monaco Portal")
 
 # --- HELPER: Detect the portfolio number column name ---
 def get_portf_num_col(df):
