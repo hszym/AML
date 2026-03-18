@@ -253,6 +253,11 @@ if role == "Banker Portal":
                                     os.makedirs(trx_folder, exist_ok=True)
                                     for i, f_upload in enumerate(up_files):
                                         f_name = f"{ref}_Doc_{i}_{f_upload.name}"
+                                        # Truncate filename if full path would exceed Windows MAX_PATH (260)
+                                        ext = os.path.splitext(f_name)[1]
+                                        max_name = 259 - len(trx_folder) - 1  # 1 for separator
+                                        if len(f_name) > max_name:
+                                            f_name = f_name[:max_name - len(ext)] + ext
                                         f_path = os.path.join(trx_folder, f_name)
                                         with open(f_path, "wb") as fh:
                                             fh.write(f_upload.getbuffer())
