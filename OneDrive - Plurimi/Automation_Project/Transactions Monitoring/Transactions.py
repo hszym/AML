@@ -84,7 +84,7 @@ def apply_aml_rules(df):
             reasons.append(f"ETHR Country ({country}) > 10k")
 
         # RÈGLE 4: Retraits d'espèces
-        if amt <= -30000 and any(w in desc for w in ["RETRAIT", "DAB", "ESPECES", "CASH"]):
+        if amt <= -30000 and any(w in desc for w in ["RETRAIT", "DAB", "ESPECES"]):
             reasons.append("Withdrawal > 30k (DAB/Specie)")
 
         flags.append("; ".join(reasons) if reasons else "Clear")
@@ -409,6 +409,7 @@ else:
                                 f" | {row['Amount']} {row['Currency']}"
                                 f"{portf_num_display}"
                             )
+                            st.write(f"🚩 **Flag Reason:** {row['AML_Flag_Reason']}")
                             st.write(f"💬 **RM Justification:** {row['Explanation']}")
 
                             # Multiple document viewer
