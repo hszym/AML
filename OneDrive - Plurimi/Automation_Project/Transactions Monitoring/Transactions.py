@@ -259,9 +259,11 @@ if role == "Banker Portal":
                                         if len(f_name) > max_name:
                                             f_name = f_name[:max_name - len(ext)] + ext
                                         f_path = os.path.join(trx_folder, f_name)
+                                        os.makedirs(os.path.dirname(f_path), exist_ok=True)
                                         with open(f_path, "wb") as fh:
                                             fh.write(f_upload.getbuffer())
                                         saved_paths.append(f_path)
+                                        st.success(f"✅ Uploaded: {f_upload.name}")
 
                                 if saved_paths:
                                     b_data.at[idx, 'Doc_Path'] = ";".join(saved_paths)
