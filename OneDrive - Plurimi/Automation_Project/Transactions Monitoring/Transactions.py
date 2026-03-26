@@ -3,17 +3,42 @@ import pandas as pd
 import streamlit as st
 import os
 import urllib.parse
+import json
+import getpass
 from datetime import datetime
 
 st.set_page_config(layout="wide", page_title="AML Monaco Portal")
 
 # --- 1. CONFIGURATION ---
-dev_mode = st.sidebar.toggle("🛠️ Dev Mode", value=False)
-BASE_DIR = (
-    r"C:\Users\Hugo Szym\OneDrive - Plurimi\Automation_Project\Transactions Monitoring"
-    if dev_mode else
-    r"C:\Users\ChiaraIncardona\OneDrive - Plurimi\Documents - Plurimi Wealth (Monaco) SAM\Compliance\PROCEDURES\MCO AML TR MONITORING\MONTHLY MONITORING\2026"
-)
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_CONFIG_FILE = os.path.join(_SCRIPT_DIR, "config.json")
+_USERNAME = getpass.getuser()
+
+
+def _load_config():
+    if os.path.exists(_CONFIG_FILE):
+        with open(_CONFIG_FILE, "r") as _f:
+            return json.load(_f)
+    return {}
+
+
+def _save_config(cfg):
+    with open(_CONFIG_FILE, "w") as _f:
+        json.dump(cfg, _f, indent=2)
+
+
+_config = _load_config()
+BASE_DIR = _config.get(_USERNAME, "")
+
+if not BASE_DIR:
+    st.warning(f"No working directory configured for user **{_USERNAME}**.")
+    _init_path = st.text_input("Enter the working directory path:")
+    if st.button("Save Path") and _init_path:
+        _config[_USERNAME] = _init_path
+        _save_config(_config)
+        st.rerun()
+    st.stop()
+
 RM_EMAIL_FILE = os.path.join(BASE_DIR, "RM_Emails.xlsx")
 ETHR_FILE = os.path.join(BASE_DIR, "ETHR_List.xlsx")
 COMPLIANCE_PASSWORD = "Chiara"
@@ -289,6 +314,16 @@ else:
     pwd = st.sidebar.text_input("Compliance Password", type="password")
 
     if pwd == COMPLIANCE_PASSWORD:
+        with st.expander("⚙️ Path Settings"):
+            st.text(f"Current path: {BASE_DIR}")
+            _new_path = st.text_input("Amend path:", value=BASE_DIR, key="path_settings_input")
+            if st.button("Save", key="path_settings_save") and _new_path:
+                _cfg = _load_config()
+                _cfg[_USERNAME] = _new_path
+                _save_config(_cfg)
+                st.success("Path saved.")
+                st.rerun()
+
         with st.expander("📁 Step 1: Initialize New Month"):
             m_in = st.text_input("Month (e.g., 2026.01)")
             f_in = st.file_uploader("Upload Expersoft Excel", type="xlsx")
