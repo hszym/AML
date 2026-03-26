@@ -46,10 +46,19 @@ COMPLIANCE_PASSWORD = "Chiara"
 # --- HELPER: Detect the portfolio number column name ---
 def get_portf_num_col(df):
     """Returns the portfolio number column name found in the dataframe, or None."""
-    candidates = ['Portf. No', 'Portf No', 'Portfolio No', 'Portfolio Number',
-                  'Portfolio_No', 'PortfolioNo', 'Portf. Number', 'Portfolio_Number', 'Portf_No']
+    candidates = [
+        'Portf. No', 'Portf No', 'Portf. N°', 'Portf N°',
+        'Portfolio No', 'Portfolio Number', 'Portfolio N°',
+        'Portfolio_No', 'PortfolioNo', 'Portf. Number', 'Portfolio_Number', 'Portf_No',
+    ]
     for c in candidates:
         if c in df.columns:
+            return c
+    # Fallback: case-insensitive search for any column that looks like a portfolio number
+    skip = {'portf. name', 'portf. manager', 'portfolio name', 'portfolio manager'}
+    for c in df.columns:
+        cl = c.lower()
+        if 'portf' in cl and cl not in skip:
             return c
     return None
 
@@ -208,12 +217,33 @@ if role == "Banker Portal":
                         key="batch_ans",
                         placeholder="Enter the explanation to apply to all selected transactions..."
                     )
+                    batch_files = st.file_uploader(
+                        "📤 Upload Evidence (optional — applied to all selected transactions)",
+                        accept_multiple_files=True,
+                        key="batch_up"
+                    )
                     if st.button("✅ Submit for Selected", type="primary", key="batch_submit"):
                         if batch_ans:
                             for ref in checked:
                                 match = tasks[tasks['Ref'] == ref]
                                 if not match.empty:
                                     i = match.index[0]
+                                    saved_paths = []
+                                    if batch_files:
+                                        trx_folder = os.path.join(get_docs_folder(m_val), ref)
+                                        os.makedirs(trx_folder, exist_ok=True)
+                                        for fi, f_upload in enumerate(batch_files):
+                                            ext = os.path.splitext(f_upload.name)[1]
+                                            f_name = f"{ref}_Doc_{fi}_{f_upload.name}"
+                                            max_name = 259 - len(trx_folder) - 1
+                                            if len(f_name) > max_name:
+                                                f_name = f_name[:max_name - len(ext)] + ext
+                                            f_path = os.path.join(trx_folder, f_name)
+                                            with open(f_path, "wb") as fh:
+                                                fh.write(f_upload.getbuffer())
+                                            saved_paths.append(f_path)
+                                    if saved_paths:
+                                        b_data.at[i, 'Doc_Path'] = ";".join(saved_paths)
                                     b_data.at[i, 'Explanation'] = batch_ans
                                     b_data.at[i, 'Resolved'] = "Waiting for Compliance"
                                     b_data.at[i, 'Date of Response'] = datetime.now().strftime("%Y-%m-%d")
