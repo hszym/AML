@@ -273,6 +273,7 @@ if role == "Banker Portal":
                         f" &nbsp;·&nbsp; {row['Tr. date']}"
                         f" &nbsp;·&nbsp; {row['Tr. description']}"
                         f" &nbsp;·&nbsp; **{row['Amount']} {row['Currency']}**"
+                        f" &nbsp;·&nbsp; 🚩 {row['AML_Flag_Reason']}"
                     )
 
                     if col_btn.button("▲ Close" if is_expanded else "▼ Open", key=f"exp_btn_{ref}"):
