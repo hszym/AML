@@ -416,6 +416,7 @@ else:
                                 f"- {r['Ref']}: {r['Portf. name']}"
                                 + (f" (Portfolio {r[portf_num_col]})" if portf_num_col else "")
                                 + f" ({r['Tr. description']})"
+                                + f" [Flag: {r['AML_Flag_Reason']}]"
                                 for _, r in rm_tasks.iterrows()
                             ])
                             body = urllib.parse.quote(
